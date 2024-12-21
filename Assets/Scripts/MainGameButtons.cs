@@ -25,7 +25,9 @@ public class MainGameButtons : MonoBehaviour
     }
     public void onHomeButtonClick()
     {
+        Time.timeScale = 1f;  // Resume game
         AudioManager.instance.ButtomClickSound();
+        Destroy(AudioManager.instance);
         SceneManager.LoadScene(0);  // Load the MainMenu scene
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created

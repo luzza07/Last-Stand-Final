@@ -7,6 +7,19 @@ public class TapToStart : MonoBehaviour
     private float timeElapsed = 0f;
     private bool sceneStarted = false;
 
+    public static TapToStart instance = null;
+    private void Awake()
+    {
+        if (!instance)
+        {
+            instance = this;
+        }
+    }
+    public void resetvalues()
+    {
+        timeElapsed = 0f;
+        sceneStarted = false;
+    }
     // Update is called once per frame
     void Update()
     {
@@ -19,6 +32,8 @@ public class TapToStart : MonoBehaviour
             {
                 AudioManager.instance.ButtomClickSound();
                 sceneStarted = true;
+                Destroy(AudioManager.instance);
+                resetvalues();
                 StartCoroutine(LoadSceneAsync(2));  // Start loading scene asynchronously
             }
         }
