@@ -31,20 +31,22 @@ public class XPSystem : MonoBehaviour
     {
         currentXP += xp;
         currentScore += score;
+
+        // Check if the current score exceeds the saved high score
+        if (currentScore > savedHighScore)
+        {
+            savedHighScore = currentScore; // Update the local high score variable
+            PlayerPrefs.SetInt("HighScore", savedHighScore); // Save it to PlayerPrefs
+        }
+
         if (currentXP >= maxXP)
         {
             LevelUp();
         }
-        if ( score > savedHighScore)
-        {
-            PlayerPrefs.SetInt("HighScore",score);
-        }
-        else
-        {
-            PlayerPrefs.SetInt("HighScore", savedHighScore);
-        }
+
         UpdateUI();
     }
+
 
     private void LevelUp()
     {
@@ -69,6 +71,7 @@ public class XPSystem : MonoBehaviour
 
         savedHighScore = PlayerPrefs.GetInt("HighScore", 0);
         highScore.text = "High Score: " + savedHighScore;
+        Debug.Log("HS: "+savedHighScore);
     }
 
     // Display ability selection

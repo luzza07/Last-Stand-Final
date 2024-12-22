@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
     private float elapsedTime = 0f;
 
     // Variables to control spawn rates for each enemy type
-    private float enemy0SpawnRate = 0.2f; // Enemy 0 spawns every 1 seconds initially
+    private float enemy0SpawnRate = 0.02f;
     private float enemy1SpawnRate = 1f; // Enemy 1 spawns every 2 seconds initially
     private float enemy2SpawnRate = 6f; // Enemy 2 spawns every 6 seconds initially
 
@@ -116,8 +116,8 @@ public class GameManager : MonoBehaviour
         {
             AudioManager.instance.GameOverSound();
             gameOver = true;
-            PlayerController.playerController.canMove = false;
-            PlayerController.playerController.canAim = false;
+            PlayerController.instance.canMove = false;
+            PlayerAimAndShoot.playerAimAndShoot.canAim = false;
             gameOverPanel.SetActive(true);
             Destroy(GameObject.FindWithTag("Player"));
         }
@@ -164,25 +164,26 @@ public class GameManager : MonoBehaviour
         // If time is more than 1 minute and less than 2 minutes, spawn both enemy[0] and enemy[1]
         if (elapsedTime >= 60f && elapsedTime < 120f)
         {
-            enemy0SpawnRate = 2f; // Enemy 0 every 2 seconds
-            enemy1SpawnRate = 4f; // Enemy 1 every 4 seconds
+            enemy0SpawnRate = 0.5f; // Enemy 0 every 1 second (faster spawn rate)
+            enemy1SpawnRate = 2f; // Enemy 1 every 2 seconds
             enemy2SpawnRate = Mathf.Infinity; // Don't spawn enemy 2 yet
         }
         // If time is more than 2 minutes, spawn all three enemies
         else if (elapsedTime >= 120f)
         {
-            enemy0SpawnRate = 2f; // Enemy 0 every 2 seconds
-            enemy1SpawnRate = 4f; // Enemy 1 every 4 seconds
-            enemy2SpawnRate = 6f; // Enemy 2 every 6 seconds
+            enemy0SpawnRate = 1; // Enemy 0 every 1 second (faster spawn rate)
+            enemy1SpawnRate = 2; // Enemy 1 every 2 seconds
+            enemy2SpawnRate = 10f; // Enemy 2 every 4 seconds (faster spawn rate)
         }
         // If time is less than 1 minute, only spawn enemy 0
         else
         {
-            enemy0SpawnRate = 2f; // Enemy 0 every 2 seconds
+            enemy0SpawnRate = 0.7f; // Enemy 0 every 1 second (faster spawn rate)
             enemy1SpawnRate = Mathf.Infinity; // Don't spawn enemy 1 yet
             enemy2SpawnRate = Mathf.Infinity; // Don't spawn enemy 2 yet
         }
     }
+
 
     // Method to spawn an enemy based on its index
     void SpawnEnemy(int enemyIndex)

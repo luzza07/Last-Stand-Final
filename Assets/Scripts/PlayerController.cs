@@ -1,38 +1,26 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;  // Make sure this is at the top
 
 public class PlayerController : MonoBehaviour
 {
     public bool canMove = true;
-    public bool canAim = true;
-    public GameObject bulletPrefab; // Bullet prefab
-    public Transform firePoint;     // The point where bullets are spawned
-    public float bulletSpeed = 40f; // Speed of the bullet
+    public float playerMoveSpeed = 3f; // Movement speed
+    public static PlayerController instance = null;
 
-    public static PlayerController playerController = null;
     private void Awake()
     {
-        if (!playerController)
+        if(instance == null)
         {
-            playerController = this;
+            instance = this;
         }
     }
 
-    void Start()
-    {
-        // Start the shooting coroutine immediately when the game starts
-        StartCoroutine(AutoShoot());
-    }
-
+    // Update is called once per frame
     void FixedUpdate()
     {
         if (canMove)
         {
             Move();
-        }
-        if (canAim)
-        {
-            AimWithMouse();
         }
     }
 
@@ -52,65 +40,41 @@ public class PlayerController : MonoBehaviour
         }
 
         // Apply movement
-        transform.position += direction * GameManager.gameManager.PlayerMoveSpeed * Time.deltaTime;
+        transform.position += direction * playerMoveSpeed * Time.deltaTime;
     }
-
-    void AimWithMouse()
-    {
-        // Get the mouse position in world space
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-        // Calculate the direction from the player to the mouse
-        Vector3 direction = mousePosition - transform.position;
-
-        // Ignore Z-axis
-        direction.z = 0;
-
-        // Calculate the angle in degrees
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-        // Apply the rotation to the player's Z-axis
-        transform.rotation = Quaternion.Euler(0, 0, angle);
-    }
-
-    IEnumerator AutoShoot()
-    {
-        while (canAim) // Continuously shoot as long as the game is running
-        {
-            Shoot();  // Call the shoot method
-
-            // Wait for the specified interval before shooting again
-            yield return new WaitForSeconds(GameManager.gameManager.ShootInterval);
-        }
-    }
-
-    void Shoot()
-    {
-        AudioManager.instance.PlayShootSound();
-
-        // Spawn bullet at firePoint position with firePoint rotation (for direction)
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-
-        // Calculate the direction to apply force
-        Vector3 direction = firePoint.up;
-
-        // Apply velocity to move bullet straight
-        Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-        rb.linearVelocity = direction * bulletSpeed;
-
-        // Reset Z-rotation to keep bullet visually straight
-        bullet.transform.rotation = Quaternion.Euler(0, 0, 0);
-    }
-
-
-
-
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
+            Debug.Log("Collided");
+            // Decrease player health
             GameManager.gameManager.decreasePlayerHealth();
+
+            // Get the Rigidbody2D component of the player
+            Rigidbody2D rb = GetComponent<Rigidbody2D>();
+
+            if (rb != null)
+            {
+                // Calculate the direction away from the enemy
+                Vector2 forceDirection = (transform.position - collision.transform.position).normalized;
+
+                // Apply a small force to push the player away
+                float forceMagnitude = 10f; // Adjust the force magnitude as needed
+                rb.AddForce(forceDirection * forceMagnitude, ForceMode2D.Impulse);
+
+                // Stop the player after a short delay
+                StartCoroutine(StopPlayerAfterPush(rb));
+            }
         }
+    }
+
+    private IEnumerator StopPlayerAfterPush(Rigidbody2D rb)
+    {
+        // Wait for a short time to allow the push to take effect
+        yield return new WaitForSeconds(0.1f);
+
+        // Stop the player's movement
+        rb.linearVelocity = Vector2.zero;
     }
 }
